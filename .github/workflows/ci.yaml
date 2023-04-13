@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: true
-      max-parallel: 2
+      max-parallel: 1
       matrix:
         php: ['8.2']
       
@@ -30,8 +30,9 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           #extensions: dom, curl, libxml, mbstring, iconv, intl, zip, pdo_sqlite
-          extensions: xdebug
-          coverage: xdebug
+          #extensions: xdebug
+          #coverage: xdebug
+          coverage: none
           tools: flex
 
       - name: Install Composer dependencies

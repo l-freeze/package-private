@@ -7,12 +7,10 @@ use LFreeze\PackagePrivate\Exception\CallerNamespaceUndefinedException;
 use LFreeze\PackagePrivate\Exception\UninitializedException;
 use ReflectionClass;
 use ReflectionProperty;
-use Closure;
-use Exception;
 use BadMethodCallException;
 use UnexpectedValueException;
 
-trait AssignAttribute {
+trait PackagePrivateAttribute {
 
     private bool $_initialized = false;
     static private $_callersNamespaceName = '';
@@ -126,14 +124,16 @@ trait AssignAttribute {
     static private function createPropertyAccessErrorMessage($namespace, $property){
         return 'Cannot access private property '.$namespace . '::$' . $property;
     }
-    static private function throwPropertyAccessFatalError($namespace, $property) {
-        trigger_error(static::createPropertyAccessErrorMessage($namespace, $property), E_USER_ERROR);
-    }
+    
+    //static private function throwPropertyAccessFatalError($namespace, $property) {
+    //    trigger_error(static::createPropertyAccessErrorMessage($namespace, $property), E_USER_ERROR);
+    //}
 
     static private function createMethodCallErrorMessage($namespace, $method) {
         return 'Call to private method '.$namespace . '::' . $method . '()';
     }
-    static private function throwMethodCallFatalError($namespace, $method) {
-        trigger_error(static::createMethodCallErrorMessage($namespace, $method), E_USER_ERROR);
-    }
+
+    //static private function throwMethodCallFatalError($namespace, $method) {
+    //    trigger_error(static::createMethodCallErrorMessage($namespace, $method), E_USER_ERROR);
+    //}
 }
