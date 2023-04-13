@@ -1,0 +1,42 @@
+name: Tests
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    types: 
+      - ready_for_review
+      - synchronize
+      - opened
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: true
+      max-parallel: 2
+      matrix:
+        php: ['8.2']
+      
+    name: php:${{ matrix.php }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          #extensions: dom, curl, libxml, mbstring, iconv, intl, zip, pdo_sqlite
+          extensions: xdebug
+          coverage: xdebug
+          tools: flex
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Run tests
+        #run: ./vendor/bin/phpunit
+        run: composer test
