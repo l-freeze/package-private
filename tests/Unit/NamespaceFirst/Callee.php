@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace Tests\Unit\NamespaceFirst;
 
 use LFreeze\PackagePrivate\PackagePrivate;
-use LFreeze\PackagePrivate\AssignAttribute;
+use LFreeze\PackagePrivate\PackagePrivateAttribute;
 
 class Callee {
-    use AssignAttribute;
+    use PackagePrivateAttribute;
 
     #[PackagePrivate]
     private int $packagePrivateInt = 11111;
