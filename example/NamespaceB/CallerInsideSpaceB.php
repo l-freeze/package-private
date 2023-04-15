@@ -22,7 +22,7 @@ readonly final class CallerInsideSpaceB {
         //get property
         //echo $example->x.PHP_EOL;
         //echo $example->y.PHP_EOL;
-        echo $example->namedArguments1.PHP_EOL;
+        //echo $example->namedArguments1.PHP_EOL;
         echo $example->namedArguments2.PHP_EOL;
         $example->packagePrivateInt = 13;
         echo '$example->packagePrivateInt:'. $example->packagePrivateInt.PHP_EOL;

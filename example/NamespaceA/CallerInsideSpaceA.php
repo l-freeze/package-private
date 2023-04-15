@@ -27,7 +27,7 @@ readonly final class CallerInsideSpaceA {
         $example = $example->__create(true);
 
         //get property
-        echo $example->namedArguments1.PHP_EOL;
+        //echo $example->namedArguments1.PHP_EOL; //cannot read
         echo $example->namedArguments2.PHP_EOL;
         $example->packagePrivateInt = 13;
         echo '$example->packagePrivateInt:'. $example->packagePrivateInt.PHP_EOL;

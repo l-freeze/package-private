@@ -16,7 +16,11 @@ final class Callee {
 
     private int $privateInt = 123;
 
-    public function __construct(public $namedArguments1 = 'DefaultPropertyX', public $namedArguments2 = 'DefaultPropertyY') {
+    public function __construct(
+        private $namedArguments1 = 'DefaultPropertyX', 
+        #[PackagePrivate] 
+        private $namedArguments2 = 'DefaultPropertyY'
+    ){
     }
 
     #[PackagePrivate]
