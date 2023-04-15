@@ -46,4 +46,8 @@ final class Callee {
         return $n+100;
     }
 
+    public function newThis() {
+        return new $this;
+    }
+
 }

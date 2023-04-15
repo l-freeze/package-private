@@ -8,6 +8,7 @@ use LFreeze\PackagePrivate\Exception\UninitializedException;
 use ReflectionClass;
 use ReflectionProperty;
 use BadMethodCallException;
+use ReflectionParameter;
 use UnexpectedValueException;
 
 trait PackagePrivateAttribute {
@@ -25,13 +26,20 @@ trait PackagePrivateAttribute {
     }
 
     /**
-     * PackagePrivate属性を有効化したインスタンスを返す
+     * PackagePrivate属性を[有効化|無効化]したインスタンスを返す
      *
-     * @param mixed $args コンストラクタを呼び出す時の可変長引数
+     * @param bool $args コンストラクタを呼び出す時の可変長引数
      * @return self
      */
-    static public function create(...$args): self {
-        $self = new self;
+    public function __create(bool $packagePrivateEnabled = true): self {
+        return match($packagePrivateEnabled) {
+            true => $this->packagePrivateEnabled(),
+            false => $this->packagePrivateDisabled(),
+        };
+    }
+
+    private function packagePrivateEnabled() {
+        $self = new $this;
         $reflectionClass = new ReflectionClass($self);
 
         $eraseCharCount = strlen(__NAMESPACE__) + 1;
@@ -64,6 +72,11 @@ trait PackagePrivateAttribute {
             }
         }
 
+        $constructorNamedArgumentsNames = array_map(fn(ReflectionParameter $parameter)=> $parameter->getName(), $reflectionClass->getConstructor()->getParameters());
+        $args = [];
+        foreach($constructorNamedArgumentsNames as $argumentsName) {
+            $args[$argumentsName] = $this->$argumentsName;
+        }
         $instance = $reflectionClass->newInstance(...$args);
         $instance->_packagePrivateProperties = $properties;
         $instance->_packagePrivateMethods = $methods;
@@ -71,6 +84,23 @@ trait PackagePrivateAttribute {
         $instance->_initialized = true;
         return $instance;
     }
+
+    private function packagePrivateDisabled() {
+        $self = new $this;
+        $reflectionClass = new ReflectionClass($self);
+
+        $constructorNamedArgumentsNames = array_map(fn(ReflectionParameter $parameter)=> $parameter->getName(), $reflectionClass->getConstructor()->getParameters());
+        $args = [];
+        foreach($constructorNamedArgumentsNames as $argumentsName) {
+            $args[$argumentsName] = $this->$argumentsName;
+        }
+        $instance = $reflectionClass->newInstance(...$args);
+        $instance->_packagePrivateProperties = [];
+        $instance->_packagePrivateMethods = [];
+        $instance->_initialized = true;
+        return $instance;
+    }
+
 
     public function __set($property, $v) {
         if (self::$_callersNamespaceName === '') {
