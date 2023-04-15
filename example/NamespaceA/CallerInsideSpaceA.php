@@ -10,7 +10,7 @@ readonly final class CallerInsideSpaceA {
 
     public function do() {
         echo PHP_EOL."[[[ ".__NAMESPACE__." ]]]".PHP_EOL;
-        Callee::assignCallerNamespaceName(__NAMESPACE__);
+        Callee::assignCallerNamespaceName();
 
         //NG example: property access error if when not call create
         //$example = new Callee(namedArguments1: "name1", namedArguments2: "name2");

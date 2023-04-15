@@ -21,8 +21,27 @@ trait PackagePrivateAttribute {
     readonly private array $_packagePrivateProperties;
     readonly private array $_packagePrivateMethods;
 
-    static public function assignCallerNamespaceName(string $namespace) {
-        static::$_callersNamespaceName = $namespace;
+    static public function assignCallerNamespaceName() {
+            $backTrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+            $callerUserInfo = $backTrace[1];
+            $callerInfo = $backTrace[0];
+            if (isset($callerUserInfo['class'])) {
+                $namespace = (new ReflectionClass($callerUserInfo['class']))->getNamespaceName();
+            } elseif (isset($callerInfo['file'])) {
+                $file = fopen($callerInfo['file'], "r");
+                $namespaceLine = '';
+                while (!feof($file) && $namespaceLine === '') {
+                    $str = fgets($file);
+                    echo "[Line] $str".PHP_EOL;
+                    $namespaceLine = match (preg_match("/^namespace\s+[\w|\\\\]+;$/", $str, $match)) {
+                        1 => $str,
+                        0 => ''
+                    };
+                }
+                fclose($file);
+                $namespace = rtrim(array_reverse(explode(' ', $namespaceLine))[0], ";\r\n");
+            }
+            static::$_callersNamespaceName = $namespace;
     }
 
     /**
