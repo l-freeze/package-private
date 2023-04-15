@@ -45,8 +45,8 @@ trait PackagePrivateAttribute {
         $eraseCharCount = strlen(__NAMESPACE__) + 1;
 
         //fields
-        $reflectionProperties = $reflectionClass->getProperties(ReflectionProperty::IS_PRIVATE);
         $properties = [];
+        $reflectionProperties = $reflectionClass->getProperties(ReflectionProperty::IS_PRIVATE);
         foreach ($reflectionProperties as $reflectionProperty) {
             $attributes = $reflectionProperty->getAttributes();
             foreach ($attributes as $attribute) {
@@ -58,9 +58,22 @@ trait PackagePrivateAttribute {
             }
         }
 
+        //constructor property promotion
+        $reflectionConstructorParameters = $reflectionClass->getConstructor()->getParameters();
+        foreach($reflectionConstructorParameters as $constructorParameters) {
+            $attributes = $constructorParameters->getAttributes();
+            foreach ($attributes as $attribute) {
+                $attributeName = $attribute->getName();
+                if (substr($attributeName, $eraseCharCount, strlen($attributeName) - $eraseCharCount) === static::ATTRIBUTE_NAME) {
+                    $properties[] = $reflectionProperty->getName();
+                    continue;
+                }
+            }
+        }
+
         //methods
-        $reflectionMethods = $reflectionClass->getMethods(ReflectionProperty::IS_PRIVATE);
         $methods = [];
+        $reflectionMethods = $reflectionClass->getMethods(ReflectionProperty::IS_PRIVATE);
         foreach ($reflectionMethods as $reflectionMethod) {
             $attributes = $reflectionMethod->getAttributes();
             foreach ($attributes as $attribute) {
@@ -100,7 +113,6 @@ trait PackagePrivateAttribute {
         $instance->_initialized = true;
         return $instance;
     }
-
 
     public function __set($property, $v) {
         if (self::$_callersNamespaceName === '') {
