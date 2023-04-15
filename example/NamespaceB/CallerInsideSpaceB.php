@@ -7,24 +7,21 @@ use Example\NamespaceA\Callee;
 readonly final class CallerInsideSpaceB {
 
     public function __construct(private ?string $param1 = null,private  ?int $param2 = null) {
-
     }
 
     public function do() {
         echo PHP_EOL."[[[ ".__NAMESPACE__." ]]]".PHP_EOL;
         Callee::assignCallerNamespaceName(__NAMESPACE__);
 
-        //Cannot use constructor
-        //$example = new Example();
-
+        //$example = (new Callee(namedArguments1: "name1", namedArguments2: "name2"))->create();
         $example = match (is_null($this->param1) && is_null($this->param2)) {
-            true => Callee::create(),
-            false => Callee::create($this->param1, $this->param2)
+            true => (new Callee(namedArguments2: "partialarguments"))->__create(),
+            false => (new Callee(namedArguments1: $this->param1, namedArguments2: $this->param2))->__create()
         };
 
         //get property
-        echo $example->x.PHP_EOL;
-        echo $example->y.PHP_EOL;
+        //echo $example->x.PHP_EOL;
+        //echo $example->y.PHP_EOL;
         echo $example->namedArguments1.PHP_EOL;
         echo $example->namedArguments2.PHP_EOL;
         $example->packagePrivateInt = 13;

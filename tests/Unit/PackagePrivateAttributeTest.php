@@ -18,13 +18,13 @@ use BadMethodCallException;
 /**
  * @covers LFreeze\PackagePrivate\AssignAttribute
  */
-class AssignAttributeTest extends TestCase
+class PackagePrivateAttributeTest extends TestCase
 {
 
     public function test_assignCallerNamespaceを呼ばずにプロパティにアクセスしたらエラー_getter() {
         $testClass = new class extends NamespaceFirst\Caller {
             public function do() {
-                $callee = NamespaceFirst\Callee::create();
+                $callee = (new NamespaceFirst\Callee())->__create();
                 $callee->packagePrivateInt;
             }
         };
@@ -35,7 +35,7 @@ class AssignAttributeTest extends TestCase
     public function test_assignCallerNamespaceを呼ばずにプロパティにアクセスしたらエラー_setter() {
         $testClass = new class extends NamespaceFirst\Caller {
             public function do() {
-                $callee = NamespaceFirst\Callee::create();
+                $callee = (new NamespaceFirst\Callee())->__create();
                 $callee->packagePrivateInt = 132;
             }
         };
@@ -43,7 +43,7 @@ class AssignAttributeTest extends TestCase
         $testClass->do();
     }
 
-    public function test_createを通さずインスタンス化したらプロパティアクセス時にエラー() {
+    public function test_createを通さずインスタンスを使ったらプロパティアクセス時にエラー() {
         $testClass = new class extends NamespaceFirst\Caller {
             public function do() {
                 $callerNamespace = (new ReflectionClass($this))->getNamespaceName();
@@ -56,12 +56,25 @@ class AssignAttributeTest extends TestCase
         $testClass->do();
     }
 
+    public function test_namespaceが異なる場合プロパティアクセス時にエラー() {
+        $testClass = new class extends NamespaceSecond\Caller {
+            public function do() {
+                $callerNamespace = (new ReflectionClass($this))->getNamespaceName();
+                NamespaceFirst\Callee::assignCallerNamespaceName($callerNamespace);
+                $callee = (new NamespaceFirst\Callee())->__create();
+                $callee->packagePrivateInt = 132;
+            }
+        };
+        $this->expectException(UnexpectedValueException::class);
+        $testClass->do();
+    }
+
     public function test_PackagePrivate属性の無いプロパティにアクセスしたらエラー_getter() {
         $testClass = new class extends NamespaceFirst\Caller {
             public function do() {
                 $callerNamespace = (new ReflectionClass($this))->getNamespaceName();
                 NamespaceFirst\Callee::assignCallerNamespaceName($callerNamespace);
-                $callee = NamespaceFirst\Callee::create();
+                $callee = (new NamespaceFirst\Callee())->__create();
                 $callee->privateInt;
             }
         };
@@ -74,7 +87,7 @@ class AssignAttributeTest extends TestCase
             public function do() {
                 $callerNamespace = (new ReflectionClass($this))->getNamespaceName();
                 NamespaceFirst\Callee::assignCallerNamespaceName($callerNamespace);
-                $callee = NamespaceFirst\Callee::create();
+                $callee = (new NamespaceFirst\Callee())->__create();
                 $callee->privateInt = 123;
             }
         };
@@ -88,7 +101,7 @@ class AssignAttributeTest extends TestCase
             public function do() {
                 $callerNamespace = (new ReflectionClass($this))->getNamespaceName();
                 NamespaceFirst\Callee::assignCallerNamespaceName($callerNamespace);
-                $callee = NamespaceFirst\Callee::create();
+                $callee = (new NamespaceFirst\Callee())->__create();
                 $callee->packagePrivateInt = 31415926435;
                 return $callee->packagePrivateInt;
             }
@@ -102,7 +115,7 @@ class AssignAttributeTest extends TestCase
             public function do() {
                 $callerNamespace = (new ReflectionClass($this))->getNamespaceName();
                 NamespaceFirst\Callee::assignCallerNamespaceName($callerNamespace);
-                $callee = NamespaceFirst\Callee::create();
+                $callee = (new NamespaceFirst\Callee())->__create();
                 $callee->packagePrivateString = 31415926435;
                 return $callee->packagePrivateString;
             }
@@ -117,7 +130,7 @@ class AssignAttributeTest extends TestCase
             public function do() {
                 $callerNamespace = (new ReflectionClass($this))->getNamespaceName();
                 NamespaceFirst\Callee::assignCallerNamespaceName($callerNamespace);
-                $callee = NamespaceFirst\Callee::create();
+                $callee = (new NamespaceFirst\Callee())->__create();
                 $callee->newProperty = 31415926435;
                 return $callee->newProperty;
             }
@@ -131,7 +144,7 @@ class AssignAttributeTest extends TestCase
             public function do() {
                 $callerNamespace = (new ReflectionClass($this))->getNamespaceName();
                 NamespaceFirst\Callee::assignCallerNamespaceName($callerNamespace);
-                $callee = NamespaceFirst\Callee::create();
+                $callee = (new NamespaceFirst\Callee())->__create();
                 $callee->privateMethod();
             }
         };
@@ -145,7 +158,7 @@ class AssignAttributeTest extends TestCase
             public function do() {
                 $callerNamespace = (new ReflectionClass($this))->getNamespaceName();
                 NamespaceFirst\Callee::assignCallerNamespaceName($callerNamespace);
-                $callee = NamespaceFirst\Callee::create();
+                $callee = (new NamespaceFirst\Callee())->__create();
                 return $callee->publicMethod();
                 
             }
@@ -158,7 +171,7 @@ class AssignAttributeTest extends TestCase
             public function do() {
                 $callerNamespace = (new ReflectionClass($this))->getNamespaceName();
                 NamespaceFirst\Callee::assignCallerNamespaceName($callerNamespace);
-                $callee = NamespaceFirst\Callee::create();
+                $callee = (new NamespaceFirst\Callee())->__create();
                 $callee->undefinedMethod();
             }
         };
@@ -172,13 +185,12 @@ class AssignAttributeTest extends TestCase
             public function do() {
                 $callerNamespace = (new ReflectionClass($this))->getNamespaceName();
                 NamespaceFirst\Callee::assignCallerNamespaceName($callerNamespace);
-                $callee = NamespaceFirst\Callee::create();
+                $callee = (new NamespaceFirst\Callee())->__create();
                 return $callee->packagePrivateMethod();
             }
         };
         $this->assertSame($expect, $testClass->do());
     }
-
 }
 
 

@@ -12,13 +12,19 @@ readonly final class CallerInsideSpaceA {
         echo PHP_EOL."[[[ ".__NAMESPACE__." ]]]".PHP_EOL;
         Callee::assignCallerNamespaceName(__NAMESPACE__);
 
-        //Cannot use constructor
-        //$example = new Example();
+        //NG example: property access error if when not call create
+        //$example = new Callee(namedArguments1: "name1", namedArguments2: "name2");
+        //echo $example->namedArguments1.PHP_EOL;
 
+        //
+        //$example = (new Callee(namedArguments1: "name1", namedArguments2: "name2"))->create();
         $example = match (is_null($this->param1) && is_null($this->param2)) {
-            true => Callee::create(),
-            false => Callee::create($this->param1, $this->param2)
+            true => (new Callee(namedArguments2: "partialarguments"))->__create(),
+            false => (new Callee(namedArguments1: $this->param1, namedArguments2: $this->param2))->__create()
         };
+
+        $example = $example->__create(false);
+        $example = $example->__create(true);
 
         //get property
         echo $example->namedArguments1.PHP_EOL;

@@ -17,7 +17,7 @@ try{
 }
 echo PHP_EOL;
 
-echo ">>>>OK-B".PHP_EOL;
+echo PHP_EOL.">>>>OK-B".PHP_EOL;
 try{
     $propertyOverride = new CallerInsideSpaceA("a", 1);
     $propertyOverride->do();  
@@ -29,7 +29,7 @@ try{
 echo PHP_EOL;
 
 
-echo ">>>>NG".PHP_EOL;
+echo PHP_EOL.">>>>NG".PHP_EOL;
 try{
     $propertyOverride = new CallerInsideSpaceB();
     $propertyOverride->do();
