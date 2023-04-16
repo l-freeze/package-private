@@ -21,8 +21,40 @@ trait PackagePrivateAttribute {
     readonly private array $_packagePrivateProperties;
     readonly private array $_packagePrivateMethods;
 
-    static public function assignCallerNamespaceName(string $namespace) {
+    static private function __grepFirst(string $filepath, string $regex) {
+        $file = fopen($filepath, "r");
+        $namespaceLine = '';
+        while (!feof($file) && $namespaceLine === '') {
+            $str = fgets($file);
+            if ($str === false) {
+                break;
+            }
+            $namespaceLine = match (preg_match($regex, $str, $match)) {
+                1 => $str,
+                0 => ''
+            };
+        }
+        fclose($file);
+        return $namespaceLine;
+    }
+
+    static public function assignCallerNamespaceName(string $filepath, string $namespace) {
+        //Validation-1: namespace from file
+        $namespaceLine = self::__grepFirst($filepath, "/^namespace\s+[\w|\\\\]+;$/");
+        $namespaceFromFile = rtrim(array_reverse(explode(' ', $namespaceLine))[0], ";\r\n");
+        if ($namespaceFromFile !== $namespace) {
+            throw new \Exception("より厳しいチェックに引っかかった");
+        }
+
+        //Validation-2: using line
+        $classNameFromFile = rtrim(array_reverse(explode('\\', __CLASS__))[0], ";\r\n");
+        $usingLine = self::__grepFirst($filepath, "/.*".$classNameFromFile."::assignCallerNamespaceName/");
+        if ($usingLine === '') {
+            throw new \Exception("より厳しいチェックに引っかかった");
+        }
+
         static::$_callersNamespaceName = $namespace;
+
     }
 
     /**

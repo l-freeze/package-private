@@ -11,7 +11,7 @@ readonly final class CallerInsideSpaceB {
 
     public function do() {
         echo PHP_EOL."[[[ ".__NAMESPACE__." ]]]".PHP_EOL;
-        Callee::assignCallerNamespaceName(__NAMESPACE__);
+        Callee::assignCallerNamespaceName(__FILE__, __NAMESPACE__);
 
         //$example = (new Callee(namedArguments1: "name1", namedArguments2: "name2"))->create();
         $example = match (is_null($this->param1) && is_null($this->param2)) {
