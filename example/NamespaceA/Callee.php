@@ -2,13 +2,22 @@
 declare(strict_types=1);
 namespace Example\NamespaceA;
 
+use LFreeze\PackagePrivate\Dummy;
+use LFreeze\PackagePrivate\DummyTrait;
 use LFreeze\PackagePrivate\PackagePrivate;
 use LFreeze\PackagePrivate\PackagePrivateAttribute;
 
+#[PackagePrivate]
+//#[PackagePrivate(allowedNamespaces:["Example"])]
+//#[PackagePrivate(allowedNamespaces:["Example\\NamespaceA"])]
+//#[PackagePrivate(allowedNamespaces:["Example\\NamespaceB"])]
+//#[PackagePrivate(allowedNamespaces:["Example\\NamespaceA", "Example\\NamespaceB"])]
+#[Dummy(namespace:["Exam"], aiuoew:"aaaaaaaa") ]
 final class Callee {
     use PackagePrivateAttribute;
+    use DummyTrait;
 
-    #[PackagePrivate]
+    #[PackagePrivate(bug:"zilla")]
     private int $packagePrivateInt = 9876543210;
 
     #[PackagePrivate]

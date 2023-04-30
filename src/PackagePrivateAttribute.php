@@ -13,11 +13,18 @@ use UnexpectedValueException;
 
 trait PackagePrivateAttribute {
 
+    private const ATTRIBUTE_NAME = 'PackagePrivate';
+    private const ATTRIBUTE_ARGUMENTS_NAME = 'allowedNamespaces';
+
     private bool $_initialized = false;
     static private $_callersNamespaceName = '';
-    private const ATTRIBUTE_NAME = 'PackagePrivate';
+    private bool $_isApplicable = false;
 
-    readonly private string $_packageName;
+    /**
+     * @var array<string> $_allowedNamespaces;
+     */
+    readonly private array $_allowedNamespaces;
+    readonly private string $_caller;
     readonly private array $_packagePrivateProperties;
     readonly private array $_packagePrivateMethods;
 
@@ -44,6 +51,29 @@ trait PackagePrivateAttribute {
 
         $eraseCharCount = strlen(__NAMESPACE__) + 1;
 
+        //class
+        $classAttribute = array_filter(
+            $reflectionClass->getAttributes(), 
+            fn($attribute)=> $attribute->getName() === __NAMESPACE__.'\\'.static::ATTRIBUTE_NAME
+        )[0] ?? null;
+
+        /**
+         * packageprivateの適用対象のnamespace配列の生成
+         * 
+         * PackagePrivate(namespaces:array)で指定されている場合はnamespaces、
+         * 指定されていない場合はPackagePrivateを適用しているクラスのnamespace単体
+         */
+        $applicableNamespaces = []; //
+        if (!is_null($classAttribute)) {
+            $applicableNamespaces = array_filter(
+                $classAttribute->getArguments(),
+                fn($v, string $k) => $k===static::ATTRIBUTE_ARGUMENTS_NAME,
+                ARRAY_FILTER_USE_BOTH
+            )[static::ATTRIBUTE_ARGUMENTS_NAME] ?? [$reflectionClass->getNamespaceName()];
+        } else {
+            $applicableNamespaces = [$reflectionClass->getNamespaceName()];
+        }
+        
         //fields
         $properties = [];
         $reflectionProperties = $reflectionClass->getProperties(ReflectionProperty::IS_PRIVATE);
@@ -85,7 +115,10 @@ trait PackagePrivateAttribute {
             }
         }
 
-        $constructorNamedArgumentsNames = array_map(fn(ReflectionParameter $parameter)=> $parameter->getName(), $reflectionClass->getConstructor()->getParameters());
+        $constructorNamedArgumentsNames = array_map(
+            fn(ReflectionParameter $parameter)=> $parameter->getName(), 
+            $reflectionClass->getConstructor()->getParameters()
+        );
         $args = [];
         foreach($constructorNamedArgumentsNames as $argumentsName) {
             $args[$argumentsName] = $this->$argumentsName;
@@ -93,7 +126,8 @@ trait PackagePrivateAttribute {
         $instance = $reflectionClass->newInstance(...$args);
         $instance->_packagePrivateProperties = $properties;
         $instance->_packagePrivateMethods = $methods;
-        $instance->_packageName = static::$_callersNamespaceName;
+        $instance->_caller = static::$_callersNamespaceName;
+        $instance->_allowedNamespaces = $applicableNamespaces;
         $instance->_initialized = true;
         return $instance;
     }
@@ -123,7 +157,7 @@ trait PackagePrivateAttribute {
             throw new UninitializedException("Must be call create()");
         }
 
-        if ((new ReflectionClass ($this))->getNamespaceName() ===  $this->_packageName) {
+        if ($this->__checkApplicable()) {
             if (in_array($property, $this->_packagePrivateProperties)) {
                 $this->$property = $v;
                 return;
@@ -141,7 +175,7 @@ trait PackagePrivateAttribute {
             throw new UninitializedException("Must be call create()");
         }
         
-        if ((new ReflectionClass ($this))->getNamespaceName() ===  $this->_packageName) {
+        if ($this->__checkApplicable()) {
             if (in_array($property, $this->_packagePrivateProperties)) {
                 return $this->$property;
             }
@@ -152,7 +186,7 @@ trait PackagePrivateAttribute {
     }
 
     public function __call($method, array $arguments) {
-        if ((new ReflectionClass ($this))->getNamespaceName() ===  $this->_packageName) {
+        if ($this->__checkApplicable()) {
             if (in_array($method, $this->_packagePrivateMethods)) {
                 if (method_exists($this, $method)){
                     return $this->$method(...$arguments);
@@ -178,4 +212,24 @@ trait PackagePrivateAttribute {
     //static private function throwMethodCallFatalError($namespace, $method) {
     //    trigger_error(static::createMethodCallErrorMessage($namespace, $method), E_USER_ERROR);
     //}
+
+    private function __checkApplicable(): bool {
+        if ($this->_isApplicable) {
+            return true;
+        }
+        foreach($this->_allowedNamespaces as $allow) {
+            if ($this->_caller === $allow) {
+                $this->_isApplicable = true;
+                break;
+            }
+
+            $pattern = '#^'.addslashes($allow.'\\') .'.*#';
+            if (preg_match($pattern, self::$_callersNamespaceName.'\\') === 1) {
+                $this->_isApplicable = true;
+                break;
+            }
+        }
+        return $this->_isApplicable;
+    }
+
 }
