@@ -5,3 +5,4 @@
 /phpunit.xml.dist       export-ignore
 /tests/                 export-ignore
 /.vscode
+/src/Dummy*

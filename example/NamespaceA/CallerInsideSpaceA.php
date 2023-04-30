@@ -23,7 +23,7 @@ readonly final class CallerInsideSpaceA {
             false => (new Callee(namedArguments1: $this->param1, namedArguments2: $this->param2))->__create()
         };
 
-        $example = $example->__create(false);
+        //$example = $example->__create(false);
         $example = $example->__create(true);
 
         //get property

@@ -5,11 +5,10 @@ namespace LFreeze\PackagePrivate;
 use Attribute;
 
 #[Attribute(Attribute::IS_REPEATABLE|Attribute::TARGET_PROPERTY|Attribute::TARGET_METHOD|Attribute::TARGET_CLASS)]
-readonly final class PackagePrivate
+readonly final class Dummy
 {
-
     /**
-     * @param array<string> $allowedNameSpace
+     * @param array<string> $nameSpace
      */
-    public function __construct(readonly private ?array $allowedNameSpace) {}
+    public function __construct(private ?array $namespaces) {}
 }
